@@ -6,20 +6,47 @@ import {
   TextInput,
   TouchableOpacity,
   ImageBackground,
+  Alert,
 } from 'react-native';
+import { signInAnonymously } from 'firebase/auth';
 
-const bgImage = require('../assets/background-image.png'); // Make sure this path matches your assets
+const bgImage = require('../assets/background-image.png');
 
 const colors = ['#090C08', '#474056', '#8A95A5', '#B9C6AE'];
 
-const Start = ({ navigation }) => {
+const Start = ({ navigation, route }) => {
   const [name, setName] = useState('');
   const [bgColor, setBgColor] = useState(colors[0]);
+
+  const { db, auth } = route.params || {}; // Ensure db and auth exist
+
+  const handleSignIn = async () => {
+    if (!auth || !db) {
+      Alert.alert('Initialization Error', 'Firebase is not configured correctly.');
+      return;
+    }
+
+    try {
+      const result = await signInAnonymously(auth);
+      if (result?.user) {
+        navigation.navigate('Chat', {
+          name: name.trim() || 'User',
+          bgColor,
+          userID: result.user.uid,
+          db,
+        });
+      }
+    } catch (error) {
+      console.error('Sign-in failed:', error.message);
+      Alert.alert('Sign-in Error', 'Unable to sign in. Try again later.');
+    }
+  };
 
   return (
     <ImageBackground source={bgImage} style={styles.background}>
       <View style={styles.container}>
         <Text style={styles.title}>Chat App</Text>
+
         <View style={styles.inputBox}>
           <TextInput
             style={styles.textInput}
@@ -29,6 +56,7 @@ const Start = ({ navigation }) => {
             placeholderTextColor="#757083"
           />
         </View>
+
         <View style={styles.colorSection}>
           <Text style={styles.colorText}>Choose Background Color:</Text>
           <View style={styles.colorContainer}>
@@ -47,15 +75,8 @@ const Start = ({ navigation }) => {
             ))}
           </View>
         </View>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() =>
-            navigation.navigate('Chat', {
-              name: name.trim() || 'User',
-              bgColor,
-            })
-          }
-        >
+
+        <TouchableOpacity style={styles.button} onPress={handleSignIn}>
           <Text style={styles.buttonText}>Start Chatting</Text>
         </TouchableOpacity>
       </View>
