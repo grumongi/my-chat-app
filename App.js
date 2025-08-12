@@ -6,7 +6,7 @@ import Chat from './components/Chat';
 
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import { initializeAuth, getReactNativePersistence } from 'firebase/auth/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ✅ Firebase configuration
@@ -20,10 +20,8 @@ const firebaseConfig = {
   measurementId: 'G-XMNL0S4NNP',
 };
 
-// ✅ Initialize Firebase only once
+// ✅ Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-// ✅ Set up Firestore and Auth with persistence
 const db = getFirestore(app);
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
@@ -37,19 +35,16 @@ const App = () => {
       <Stack.Navigator initialRouteName="Start">
         <Stack.Screen
           name="Start"
+          component={Start}
           options={{ headerShown: false }}
-        >
-          {(props) => <Start {...props} db={db} auth={auth} />}
-        </Stack.Screen>
+          initialParams={{ db, auth }} />
 
         <Stack.Screen
           name="Chat"
+          component={Chat}
           options={{ title: 'Chat' }}
-        >
-          {(props) => <Chat {...props} db={db} auth={auth} />}
-        </Stack.Screen>
+          initialParams={{ db, auth }} />
       </Stack.Navigator>
-
       <StatusBar style="auto" />
     </NavigationContainer>
   );

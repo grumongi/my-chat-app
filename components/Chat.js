@@ -10,12 +10,17 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 
-const Chat = ({ route, navigation, db }) => {
+const Chat = ({ route, navigation }) => {
   const [messages, setMessages] = useState([]);
-  const { name, bgColor, userID } = route.params;
+  const { name, bgColor, userID, db } = route.params;
 
   useEffect(() => {
     navigation.setOptions({ title: name });
+
+    if (!db) {
+      console.error('Firestore database instance is not available');
+      return;
+    }
 
     const messagesQuery = query(
       collection(db, 'messages'),
